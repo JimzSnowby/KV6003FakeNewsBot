@@ -8,6 +8,7 @@ from sklearn.metrics import classification_report
 from sklearn.utils.class_weight import compute_class_weight
 import transformers
 from transformers import AutoModel
+from pathlib import Path
 
 from tokenizer import tokenizer
 from load_split import load_split
@@ -81,64 +82,85 @@ class Model:
 
     print("Class Weights:",class_weights)
 
-    # converting list of class weights to a tensor
-    weights= torch.tensor(class_weights,dtype=torch.float)
+    # Define the path to the file
+    weights_path = Path('model/saved_weights.pt')
 
-    # push to GPU
-    weights = weights.to(device)
+    # Check if the file exists
+    if not weights_path.exists():
+        print("TRAINING")
+        # converting list of class weights to a tensor
+        weights= torch.tensor(class_weights,dtype=torch.float)
 
-    # define the loss function
-    cross_entropy  = nn.NLLLoss(weight=weights) 
-    
-    avg_loss, total_preds = train_model(model, device, train_dataloader, optimizer, cross_entropy)
-    
-    avg_loss, total_preds = evaluate(model, device, val_dataloader, cross_entropy)
-    
-    # number of training epochs
-    epochs = 10
-    # set initial loss to infinite
-    best_valid_loss = float('inf')
+        # push to GPU
+        weights = weights.to(device)
 
-    # empty lists to store training and validation loss of each epoch
-    train_losses=[]
-    valid_losses=[]
+        # define the loss function
+        cross_entropy  = nn.NLLLoss(weight=weights) 
+        
+        avg_loss, total_preds = train_model(model, device, train_dataloader, optimizer, cross_entropy)
+        
+        avg_loss, total_preds = evaluate(model, device, val_dataloader, cross_entropy)
+        
+        # number of training epochs
+        epochs = 10
+        # set initial loss to infinite
+        best_valid_loss = float('inf')
 
-    #for each epoch
-    for epoch in range(epochs):
-        
-        print('\n Epoch {:} / {:}'.format(epoch + 1, epochs))
-        
-        #train model
-        train_loss, _ = train_model()
-        
-        #evaluate model
-        valid_loss, _ = evaluate()
-        
-        #save the best model
-        if valid_loss < best_valid_loss:
-            best_valid_loss = valid_loss
-            torch.save(model.state_dict(), 'saved_weights.pt')
-        
-        # append training and validation loss
-        train_losses.append(train_loss)
-        valid_losses.append(valid_loss)
-        
-        print(f'\nTraining Loss: {train_loss:.3f}')
-        print(f'Validation Loss: {valid_loss:.3f}')
-        
-        
-    #load weights of best model
-    path = 'saved_weights.pt'
-    model.load_state_dict(torch.load(path))
-    
-    # get predictions for test data
-    with torch.no_grad():
-        preds = model(test_seq.to(device), test_mask.to(device))
-        preds = preds.detach().cpu().numpy()
-        
-    # model's performance
-    preds = np.argmax(preds, axis = 1)
-    print(classification_report(test_y, preds))
+        # empty lists to store training and validation loss of each epoch
+        train_losses=[]
+        valid_losses=[]
 
+        #for each epoch
+        for epoch in range(epochs):
+            
+            print('\n Epoch {:} / {:}'.format(epoch + 1, epochs))
+            
+            #train model
+            train_loss, _ = train_model(model, device, train_dataloader, optimizer, cross_entropy)
+            
+            #evaluate model
+            valid_loss, _ = evaluate(model, device, val_dataloader, cross_entropy)
+            
+            #save the best model
+            if valid_loss < best_valid_loss:
+                best_valid_loss = valid_loss
+                torch.save(model.state_dict(), 'saved_weights.pt')
+            
+            # append training and validation loss
+            train_losses.append(train_loss)
+            valid_losses.append(valid_loss)
+            
+            print(f'\nTraining Loss: {train_loss:.3f}')
+            print(f'Validation Loss: {valid_loss:.3f}')
+    else:
+        print("PREDICTING")
+        """
+        #load weights of best model
+        path = 'model/saved_weights.pt'
+        model.load_state_dict(torch.load(path))
+        
+        # get predictions for test data
+        with torch.no_grad():
+            preds = model(test_seq.to(device), test_mask.to(device))
+            preds = preds.detach().cpu().numpy()
+            
+        # model's performance
+        preds = np.argmax(preds, axis = 1)
+        print(classification_report(test_y, preds))
+        """
+        # Process in batches
+        batch_size = 10  # Adjust based on your GPU memory
+        preds_list = []
+        with torch.no_grad():
+            for i in range(0, len(test_seq), batch_size):
+                batch_seq = test_seq[i:i+batch_size].to(device)
+                batch_mask = test_mask[i:i+batch_size].to(device)
+                batch_preds = model(batch_seq, batch_mask)
+                batch_preds = batch_preds.detach().cpu().numpy()
+                preds_list.append(batch_preds)
+                
+        preds = np.concatenate(preds_list, axis=0)
+        preds = np.argmax(preds, axis=1)
+        print(classification_report(test_y, preds))
     
     print("complete")
