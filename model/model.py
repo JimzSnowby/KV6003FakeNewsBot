@@ -148,6 +148,8 @@ class Model:
         preds = np.argmax(preds, axis = 1)
         print(classification_report(test_y, preds))
         """
+        path = 'model/saved_weights.pt'
+        model.load_state_dict(torch.load(path))
         # Process in batches
         batch_size = 10  # Adjust based on your GPU memory
         preds_list = []
