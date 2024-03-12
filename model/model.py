@@ -25,7 +25,6 @@ class Model:
     
     # Import BERT-base pretrained model
     bert = AutoModel.from_pretrained('bert-base-uncased')
-        
     # Initialize Tokenizer with the datasets
     tokens_train, tokens_val, tokens_test = tokenizer(train_text, val_text, test_text)
     
@@ -45,64 +44,47 @@ class Model:
     #define a batch size
     batch_size = 32
 
-    # wrap tensors
+    # wrap tensors and sample data during training
     train_data = TensorDataset(train_seq, train_mask, train_y)
-
-    # sampler for sampling the data during training
     train_sampler = RandomSampler(train_data)
-
-    # dataLoader for train set
     train_dataloader = DataLoader(train_data, sampler=train_sampler, batch_size=batch_size)
 
-    # wrap tensors
     val_data = TensorDataset(val_seq, val_mask, val_y)
-
-    # sampler for sampling the data during training
     val_sampler = SequentialSampler(val_data)
-
-    # dataLoader for validation set
     val_dataloader = DataLoader(val_data, sampler = val_sampler, batch_size=batch_size)
 
     # freeze all the parameters
     for param in bert.parameters():
         param.requires_grad = False
         
-    # pass the pre-trained BERT to our define architecture
+    # passes the pre-trained BERT to our define architecture and push to GPU
     model = BERT_Arch(bert)
-
-    # push the model to GPU
     model = model.to(device)
 
-    # define the optimizer
+    # Define optimizer and compute class weights
     optimizer = torch.optim.AdamW(model.parameters(),lr = 1e-5) 
-
-    #compute the class weights 
-    #class_weights = compute_class_weight('balanced', np.unique(train_labels), train_labels)
     class_weights = compute_class_weight(class_weight = 'balanced', classes = np.unique(train_labels), y = train_labels)
-
     print("Class Weights:",class_weights)
 
-    # Define the path to the file
+    # path to the weights produced by training
     weights_path = Path('model/saved_weights.pt')
 
-    # Check if the file exists
+    # Check if the weights file exists
     if not weights_path.exists():
         print("TRAINING")
-        # converting list of class weights to a tensor
+        # convert list of class weights to a tensor
         weights= torch.tensor(class_weights,dtype=torch.float)
 
         # push to GPU
         weights = weights.to(device)
-
         # define the loss function
         cross_entropy  = nn.NLLLoss(weight=weights) 
         
         avg_loss, total_preds = train_model(model, device, train_dataloader, optimizer, cross_entropy)
-        
         avg_loss, total_preds = evaluate(model, device, val_dataloader, cross_entropy)
         
         # number of training epochs
-        epochs = 10
+        epochs = 3
         # set initial loss to infinite
         best_valid_loss = float('inf')
 
@@ -110,18 +92,15 @@ class Model:
         train_losses=[]
         valid_losses=[]
 
-        #for each epoch
+        # for each epoch
         for epoch in range(epochs):
-            
             print('\n Epoch {:} / {:}'.format(epoch + 1, epochs))
             
-            #train model
+            # train and evaluate model, doesn't return total_preds
             train_loss, _ = train_model(model, device, train_dataloader, optimizer, cross_entropy)
-            
-            #evaluate model
             valid_loss, _ = evaluate(model, device, val_dataloader, cross_entropy)
             
-            #save the best model
+            # save the best model to a file
             if valid_loss < best_valid_loss:
                 best_valid_loss = valid_loss
                 torch.save(model.state_dict(), 'saved_weights.pt')
@@ -134,24 +113,11 @@ class Model:
             print(f'Validation Loss: {valid_loss:.3f}')
     else:
         print("PREDICTING")
-        """
-        #load weights of best model
-        path = 'model/saved_weights.pt'
-        model.load_state_dict(torch.load(path))
-        
-        # get predictions for test data
-        with torch.no_grad():
-            preds = model(test_seq.to(device), test_mask.to(device))
-            preds = preds.detach().cpu().numpy()
-            
-        # model's performance
-        preds = np.argmax(preds, axis = 1)
-        print(classification_report(test_y, preds))
-        """
+        # Load the weights from the file
         path = 'model/saved_weights.pt'
         model.load_state_dict(torch.load(path))
         # Process in batches
-        batch_size = 10  # Adjust based on your GPU memory
+        batch_size = 10  # Adjust based on GPU memory
         preds_list = []
         with torch.no_grad():
             for i in range(0, len(test_seq), batch_size):
@@ -160,6 +126,7 @@ class Model:
                 batch_preds = model(batch_seq, batch_mask)
                 batch_preds = batch_preds.detach().cpu().numpy()
                 preds_list.append(batch_preds)
+                print("batch: ", i)
                 
         preds = np.concatenate(preds_list, axis=0)
         preds = np.argmax(preds, axis=1)

@@ -19,10 +19,6 @@ def evaluate(model, device, val_dataloader, cross_entropy):
         
         # Progress update every 50 batches.
         if step % 50 == 0 and not step == 0:
-            
-            # Calculate elapsed time in minutes.
-            #elapsed = format_time(time.time() - t0)
-            
             # Report progress.
             print('  Batch {:>5,}  of  {:>5,}.'.format(step, len(val_dataloader)))
 

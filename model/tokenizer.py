@@ -2,6 +2,7 @@ from transformers import BertTokenizerFast
 import torch
 
 def tokenizer(train_text, val_text, test_text):
+    MAX_LENGTH = 50
     
     # Load the BERT tokenizer
     tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
@@ -9,7 +10,7 @@ def tokenizer(train_text, val_text, test_text):
     # tokenize and encode sequences in the training set
     tokens_train = tokenizer.batch_encode_plus(
         train_text.tolist(),
-        max_length = 25,
+        max_length = MAX_LENGTH,
         padding='max_length',
         truncation=True
     )
@@ -17,7 +18,7 @@ def tokenizer(train_text, val_text, test_text):
     # tokenize and encode sequences in the validation set
     tokens_val = tokenizer.batch_encode_plus(
         val_text.tolist(),
-        max_length = 25,
+        max_length = MAX_LENGTH,
         padding='max_length',
         truncation=True
     )
@@ -25,7 +26,7 @@ def tokenizer(train_text, val_text, test_text):
     # tokenize and encode sequences in the test set
     tokens_test = tokenizer.batch_encode_plus(
         test_text.tolist(),
-        max_length = 25,
+        max_length = MAX_LENGTH,
         padding='max_length',
         truncation=True
     )

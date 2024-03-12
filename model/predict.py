@@ -10,15 +10,16 @@ class Predict:
         # Initialize the Model class
         self.model_instance = Model()
         
-        # Load the trained model weights
+        # Load the trained model weights and set model to evaluation mode
         self.model_instance.model.load_state_dict(torch.load(model_path))
-        self.model_instance.model.eval()  # Set the model to evaluation mode
+        self.model_instance.model.eval()
         
-        self.device = self.model_instance.device  # Use the same device as the Model class
+        # Use the same device as the Model class
+        self.device = self.model_instance.device
         print("INIT")
 
     def get_predictions(self, test_seq, test_mask, test_y):
-        # Ensure test_seq and test_mask are on the correct device
+        # Use the same device as the Model class
         test_seq = test_seq.to(self.device)
         test_mask = test_mask.to(self.device)
 

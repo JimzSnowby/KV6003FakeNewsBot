@@ -2,12 +2,9 @@ import torch.nn as nn
 from transformers import AutoModel
 
 class BERT_Arch(nn.Module):
-
     def __init__(self, bert):
         super(BERT_Arch, self).__init__()
-        
-        self.bert = bert 
-        
+        self.bert = bert
         # dropout layer
         self.dropout = nn.Dropout(0.1)
         # relu activation function
@@ -26,9 +23,7 @@ class BERT_Arch(nn.Module):
         x = self.fc1(cls_hs)
         x = self.relu(x)
         x = self.dropout(x)
-        # output layer
         x = self.fc2(x)
-        # apply softmax activation
         x = self.softmax(x)
 
         return x
