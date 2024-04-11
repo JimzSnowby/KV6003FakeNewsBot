@@ -18,7 +18,11 @@ tokenizer = AutoTokenizer.from_pretrained("distilbert/distilbert-base-uncased")
 
 # Preprocess to ensure the data is in the correct format for the model
 def preprocess(examples):
-    return tokenizer(examples['tweet'], truncation=True, padding='max_length', max_length=512)
+    # Tokenize the text
+    result = tokenizer(examples['tweet'], truncation=True, padding='max_length', max_length=512)
+    # Add the labels
+    result['labels'] = [int(label) for label in examples['BinaryNumTarget']]
+    return result
 
 tokenized_dataset = dataset.map(preprocess, batched=True)
 
