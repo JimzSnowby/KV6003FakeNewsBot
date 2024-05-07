@@ -8,7 +8,7 @@ def tweet(message: str, filename = None):
         if filename:
             media_id = client_v1.media_upload(filename).media_id_string
             client_v2.create_tweet(text=message, media_ids=[media_id])
-            print("Tweeted with pic successfully!")
+            print("Tweeted with file successfully!")
         else:
             client_v2.create_tweet(text=message)
             print("Tweeted successfully!")

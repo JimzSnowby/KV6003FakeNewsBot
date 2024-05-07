@@ -1,9 +1,7 @@
-from transformers import AutoTokenizer, AutoModelForSequenceClassification, TrainingArguments, Trainer, pipeline, DataCollatorWithPadding
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, TrainingArguments, Trainer, DataCollatorWithPadding
 from datasets import load_dataset, DatasetDict
 import evaluate
 import numpy as np
-import pandas as pd
-
 
 # Load the dataset and split it into training and testing sets
 dataset = load_dataset('csv', data_files='src/datasets/Truth_Seeker_Model_Dataset.csv')
@@ -27,9 +25,7 @@ def preprocess(examples):
     return result
 
 tokenized_dataset = dataset.map(preprocess, batched=True)
-
 data_collator = DataCollatorWithPadding(tokenizer=tokenizer, padding='longest', max_length=512)
-
 accuracy = evaluate.load('accuracy')
 
 # Define the function to calculate the performance of the model
@@ -41,6 +37,7 @@ def compute_metrics(eval_pred):
 id2label = {0: 'False', 1: 'True'}
 label2id = {'False': 0, 'True': 1}
 
+# Load the model from huggingface
 """""
 model = AutoModelForSequenceClassification.from_pretrained(
     "distilbert/distilbert-base-uncased", num_labels=2, id2label=id2label, label2id=label2id)
@@ -51,8 +48,8 @@ model = AutoModelForSequenceClassification.from_pretrained(
 model = AutoModelForSequenceClassification.from_pretrained(
     "bert-base-uncased", num_labels=2, id2label=id2label, label2id=label2id)
 
+# Set up the models parameters for training
 training_args = TrainingArguments(
-    #output_dir='src/models/FN_Truth_Seeker_Model',
     output_dir='src/models/FN_TS_BertBaseUncased',
     learning_rate=2e-5,
     per_device_train_batch_size=16,

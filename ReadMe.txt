@@ -2,7 +2,7 @@ Author: James Sowerby
 Student ID: W21023500
 
 Virtual Python environment must be setup first! (venv)
-Install packages with !pip install.
+Install packages with !pip install
 
 Packages:
 transformers
@@ -26,5 +26,6 @@ Training a new model:
 Making predictions:
 In main.py, change the "classifier" variable to the location of the desired model and its highest checkpoint, then run the file.
     e.g model='src/models/FN_TS_MobileBERT/checkpoint-26840'
+Use ctrl + c to stop running the script
 
 If using a paid developer account, use the appropriate function.
