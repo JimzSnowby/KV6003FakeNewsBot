@@ -27,10 +27,12 @@ for i in response.data:
 # For use with local data
 # Load the data and the classifier
 data = pd.read_csv("src/tweet_content.csv", on_bad_lines='skip')
-classifier = pipeline('text-classification', model='src/models/FN_Truth_Seeker_Model/checkpoint-6710')
+#classifier = pipeline('text-classification', model='src/models/FN_Truth_Seeker_Model/checkpoint-6710') # DistilBERT
+#classifier = pipeline('text-classification', model='src/models/FN_TS_MobileBERT/checkpoint-26840')
+classifier = pipeline('text-classification', model='src/models/FN_TS_BertBaseUncased/checkpoint-26840')
 
 # Randomly sample 5 entries from the dataset
-sample = data.sample(n=5)
+sample = data.sample(n=5, random_state=5)
 print(sample)
 
 # get predictions for each tweet in the sample
@@ -39,5 +41,5 @@ for index, row in sample.iterrows():
     pred = classifier(text)
     # Should limit the reply length to the tweet character limit
     print(f"Fake News Checker bot suggests this post is: {pred[0]['label']} with a confidence of {pred[0]['score'] * 100:.2f}%")
-    tweet(f"In response to: {text}, Fake News Checker bot suggests this post is: {pred[0]['label']} with a confidence of {pred[0]['score'] * 100:.2f}%")
+    #tweet(f"In response to: {text}, Fake News Checker bot suggests this post is: {pred[0]['label']} with a confidence of {pred[0]['score'] * 100:.2f}%")
 

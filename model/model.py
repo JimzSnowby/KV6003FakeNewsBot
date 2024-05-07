@@ -14,7 +14,9 @@ dataset = DatasetDict({
     })
 
 # Load Tokenizer from huggingface
-tokenizer = AutoTokenizer.from_pretrained("distilbert/distilbert-base-uncased")
+#tokenizer = AutoTokenizer.from_pretrained("distilbert/distilbert-base-uncased")
+#tokenizer = AutoTokenizer.from_pretrained("google/mobilebert-uncased")
+tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
 
 # Preprocess to ensure the data is in the correct format for the model
 def preprocess(examples):
@@ -39,14 +41,22 @@ def compute_metrics(eval_pred):
 id2label = {0: 'False', 1: 'True'}
 label2id = {'False': 0, 'True': 1}
 
+"""""
 model = AutoModelForSequenceClassification.from_pretrained(
     "distilbert/distilbert-base-uncased", num_labels=2, id2label=id2label, label2id=label2id)
 
+model = AutoModelForSequenceClassification.from_pretrained(
+    "google/mobilebert-uncased", num_labels=2, id2label=id2label, label2id=label2id)
+"""""
+model = AutoModelForSequenceClassification.from_pretrained(
+    "bert-base-uncased", num_labels=2, id2label=id2label, label2id=label2id)
+
 training_args = TrainingArguments(
-    output_dir='src/models/FN_Truth_Seeker_Model',
+    #output_dir='src/models/FN_Truth_Seeker_Model',
+    output_dir='src/models/FN_TS_BertBaseUncased',
     learning_rate=2e-5,
-    per_device_train_batch_size=16,
-    per_device_eval_batch_size=16,
+    per_device_train_batch_size=8,
+    per_device_eval_batch_size=8,
     num_train_epochs=2,
     weight_decay=0.01,
     evaluation_strategy='epoch',
