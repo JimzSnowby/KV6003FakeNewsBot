@@ -1,5 +1,5 @@
 import tweepy
-from src import keys
+import keys
 
 # Authentication for APIv1, used for uploading images and videos
 def get_x_conn_v1() -> tweepy.API:

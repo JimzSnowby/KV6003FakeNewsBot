@@ -24,7 +24,7 @@ Training a new model:
     Note) per_device_train_batch_size and per_device_eval_batch_size may need to be adjusted depending on the GPU VRAM.
 
 Making predictions:
-In main.py, change the "classifier" variable to the location of the desired model and its checkpoint, then run the file.
+In main.py, change the "classifier" variable to the location of the desired model and its highest checkpoint, then run the file.
     e.g model='src/models/FN_TS_MobileBERT/checkpoint-26840'
 
 If using a paid developer account, use the appropriate function.

@@ -66,7 +66,7 @@ def predict_and_test(state):
             message = f"In response to: {text}, Fake News Checker bot suggests this post is: {pred[0]['label']} with a confidence of {pred[0]['score'] * 100:.2f}%"
             logging.info(message)
             print(message)
-            tweet(message)
+            #tweet(message)
         except Exception as e:
             error_message = f"An error occurred: {str(e)}"
             print(error_message)
