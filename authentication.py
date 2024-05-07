@@ -1,7 +1,7 @@
 import tweepy
 from src import keys
 
-# Authentication for APIv1, used for uploading media
+# Authentication for APIv1, used for uploading images and videos
 def get_x_conn_v1() -> tweepy.API:
     auth = tweepy.OAuthHandler(keys.API_KEY, keys.API_SECRET)
     auth.set_access_token(keys.ACCESS_TOKEN, keys.ACCESS_TOKEN_SECRET)
