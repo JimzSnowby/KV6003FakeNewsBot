@@ -1,3 +1,5 @@
+# All keys are now expired/unusable
+
 API_KEY = "aqrcvCEzIaV0PJhvdTR72oNaI"
 API_SECRET = "M6LyKMXDOFuuEgAfh5wlEoWId8NTNc4J7RY6e7xMTW4j1bKiw8"
 
